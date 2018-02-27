@@ -113,3 +113,34 @@
     entity_id:
       - scene.living_room_low_motion
   
+
+###############################################
+#                                             #
+#      Slack: Slack Automated Message/Bot     #
+#                                             #
+###############################################
+
+- alias: Someone Location Change
+  trigger:
+    - platform: state
+      entity_id:  device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce, device_tracker.861678d45b62cbe7, device_tracker.2f276f4efc3d4e6f9cf2d5f078b3171c, device_tracker.334e6e718945401592bacc9c5ec625a5, device_tracker.9245f2e89c6243f892cd3210f56b4b54
+  action:
+      service: notify.myslack
+      data_template:
+        message: >
+            {% set entity_name = trigger.entity_id %}
+            {% set current_state = states(entity_name) %}
+            {% if states(entity_name) != 'not_home' %}
+            {{trigger.from_state.attributes.friendly_name}} just arrived at {{ states(entity_name) }}
+              {% if current_state == 'home' %}
+              {{' :house:'}}
+              {% elif current_state == 'gym' %}
+              {{' :weight_lifter:'}}
+              {% elif current_state == 'work' %}
+              {{' :office:'}}
+              {% elif current_state == 'capitalone' %}
+              {{' :bank:'}}
+              {% endif %}  
+            {% else %}
+            {{trigger.from_state.attributes.friendly_name}} did left {{trigger.from_state.state}}
+            {% endif %}
