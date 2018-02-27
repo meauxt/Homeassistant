@@ -1,0 +1,115 @@
+###############################################
+#                                             #
+#       Google Home Automation Message        #
+#                                             #
+###############################################
+- alias: Someone Arrived Home
+  trigger:
+    - platform: state
+      entity_id:  device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce, device_tracker.861678d45b62cbe7, device_tracker.2f276f4efc3d4e6f9cf2d5f078b3171c, device_tracker.334e6e718945401592bacc9c5ec625a5, device_tracker.9245f2e89c6243f892cd3210f56b4b54
+      to: 'home'
+  action:
+      service: tts.google_say
+      entity_id: 
+        - media_player.living_room_speaker
+        - media_player.basement_speaker
+      data_template:
+        message: >
+           {% set person = trigger.from_state.attributes.friendly_name %}
+           {%- macro greeting_sentence(person) -%}
+           {{ [
+           "Knock Knock! " ~ person + " just Arrived! We have missed you. Or at least myself And Alexa did." ~ person,
+           "Guess who is home?" ~ person +" is!",
+           person + " is now in the house.",
+           "Our home is now complete! " ~ person + " is Home!",
+           "Hey there! " ~ person + " is Home!",
+           "Knock Knock. Guess who is home? "   ~ person +" is!",
+           person ~ "! Is home!",
+           "I know a secret! "  ~ person +" is home!"
+           ] | random }}
+           {%- endmacro -%}
+           "{{greeting_sentence(person)}}"
+###############################################
+#                                             #
+#           Motion Light Automation           #
+#                                             #
+###############################################
+- alias: Basement Stair Motion On
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.bs_motion
+      to: 'active'
+  condition:
+    - condition: state
+      entity_id: sun.sun
+      state: 'below_horizon'
+  action:
+      service: switch.turn_on
+      entity_id:
+        - switch.bs_led_light
+
+- alias: Basement Stair Motion Off
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.bs_motion
+
+      # Optional
+      to: 'inactive'
+      # At least one of the following required
+
+  condition:
+    - condition: state
+      entity_id: sun.sun
+      state: 'below_horizon'
+  action:
+      service: switch.turn_off
+      entity_id:
+        - switch.bs_led_light
+
+- alias: Living Room Motion Inactive at Night
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.motion
+      to: 'inactive'
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: sun.sun
+        state: 'below_horizon'
+
+      - condition: template
+        value_template: '{{ states.light.lr_lamp_2.attributes.brightness == 20}}'
+     
+      - condition: template
+        value_template: '{{ states.light.lr_lamp.attributes.brightness == 20}}'
+
+  action:
+      service: homeassistant.turn_off
+      entity_id:
+        - group.living_room
+
+- alias: Living Room Motion Active at Night
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.motion
+      to: 'active'
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: sun.sun
+        state: 'below_horizon'
+      - condition: template
+        value_template: "{{ states('light.lr_lamp_2') == 'off'}}"
+      - condition: template
+        value_template: "{{ states('light.lr_lamp') == 'off'}}"
+  action:
+  - service: scene.turn_on
+    entity_id:
+      - scene.living_room_low_motion
+  
