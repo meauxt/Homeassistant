@@ -1,0 +1,302 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 109
+  # metric for Metric, imperial for Imperial
+  unit_system: imperial
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/New_York
+  # Customization file
+  customize: !include customize.yaml
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+alexa:
+google_assistant:
+  project_id: !secret google_project_id
+  client_id: !secret google_client_id
+  access_token: !secret google_access_token
+  exposed_domains:
+    - switch
+    - light
+    - group
+
+
+
+
+http:
+  api_password: !secret http_password
+  ssl_certificate: !secret ssl_certificate
+  ssl_key: !secret ssl_key
+  base_url: !secret base_url
+
+media_player:
+  - platform: cast
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+# discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+# vacuum:
+#   - platform: xiaomi_miio
+#     host: 192.168.1.162
+#     token: '44617a57586b5739474769754375754b'
+#     name: vacuum
+# Weather prediction
+sensor:
+  # - platform: speedtest
+  #   minute:
+  #     - 0
+  #     - 30
+  #   monitored_conditions:
+  #     - ping
+  #     - download
+  #     - upload
+      
+  - platform: yr
+  - platform: command_line
+    name: Current Game
+  #  scan_intterval: 5
+    command: "sudo ps4-waker search | grep -w 'running-app-name' | cut -c 24- | rev | cut -c 3- | rev "
+
+  - platform: uber
+    server_token: !secret uber_server_token
+    start_latitude: !secret uber_start_latitude
+    start_longitude: !secret uber_start_longitude
+    end_latitude: !secret uber_end_latitude
+    end_longitude: !secret uber_end_longitude
+    product_ids:
+     - 'bc300c14-c30d-4d3f-afcb-19b240c16a13'
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion/motion"
+    name: LR Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Bedroom Motion/Temp Sensor/motion"
+    name: Upstairs Motion
+
+  # - platform: mqtt
+  #   state_topic: "sleeping"
+  #   name: is Sleeping
+
+  - platform: mqtt
+    state_topic: "smartthings/Den Motion Sensor/motion"
+    name: BS Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Den Motion Sensor/temperature"
+    name: BS Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/Bedroom Motion Sensor/temperature"
+    name: Upstairs Temperature
+
+# Cloud
+cloud:
+
+device_tracker:
+  - platform: locative
+
+  - platform: icloud
+    username: !secret icloud_username
+    password: !secret icloud_password
+    account_name: MohamadiCloud
+
+  - platform: ddwrt
+    host: 192.168.1.1
+    username: !secret ddwrt_username
+    password: !secret ddwrt_password
+    track_new_devices: no
+    
+  # - platform: nmap_tracker
+  #   hosts: 192.168.1.30-35
+  #   scan_options: " --privileged -sP "
+  
+
+mqtt:
+  broker: 127.0.0.1
+  port: 1883
+  client_id: lens_ngqIPmSfUH4CMbGXt1bGEuFtbP5
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+
+light:
+  - platform: limitlessled
+    bridges:
+    - host: 192.168.1.19
+      groups:
+      - number: 1
+        type: bridge-led
+        name: MiLight Box
+      - number: 3
+        type: rgbww
+        name: LR Lamp
+      - number: 2
+        type: rgbww
+        name: Bed Lamp 1
+      - number: 1
+        type: rgbww
+        name: Bed Lamp 2
+      - number: 4
+        type: rgbww
+        name: LR Lamp 2
+
+  - platform: mqtt
+    name: "SB Homo Lamp"
+    state_topic: "smartthings/Office Lamp/switch"
+    command_topic: "smartthings/Office Lamp/switch"
+    payload_on: "on"
+    payload_off: "off"
+    retain: true
+
+  -  platform: mqtt
+     name: "BS Office Lamp"
+     state_topic: "smartthings/Bedroom Homo Lamp/switch"
+     command_topic: "smartthings/Bedroom Homo Lamp/switch"
+     payload_on: "on"
+     payload_off: "off"
+     retain: true
+
+  - platform: mqtt
+    name: "BS Lamp"
+    state_topic: "smartthings/Bedroom Floor Lamp/switch"
+    command_topic: "smartthings/Bedroom Floor Lamp/switch"
+    payload_on: "on"
+    payload_off: "off"
+    retain: true
+
+
+tts:
+  platform: google
+  cache: true
+  cache_dir: /tmp/tts
+  time_memory: 300
+
+switch:
+  - platform: broadlink
+    host: 192.168.1.11
+    mac: !secret broadlink_mac
+    timeout: 15
+    switches:
+      tv_toshiba:
+        friendly_name: "TV"
+        command_on: 'JgBQAAABKZIVERQRFBITERURFBEUNhQRFDYUNhQ2FDYUNhQ2FBEUNhQSFDUVERQRFDYUEhMSFBEUNhQRFDYUNhQRFDYUNhQ2FAAFDAABKUgVAA0FAAAAAAAAAAA='
+        command_off: 'JgBQAAABKZIVERQRFBITERURFBEUNhQRFDYUNhQ2FDYUNhQ2FBEUNhQSFDUVERQRFDYUEhMSFBEUNhQRFDYUNhQRFDYUNhQ2FAAFDAABKUgVAA0FAAAAAAAAAAA='
+      mb_lamp:
+        friendly_name: "MB Lamp"
+        command_on: 'sggyAAYUEggGFAYUBhQSBwYUEgcGFBIIBhMSBwYUEgcGFBIHBhQGFBIHEggGFAYUEggSCAa+AAAAAAAA'
+        command_off: 'shEyAAYTEggGFAYUBhQSCAYUEgcGFBIHBhMTBwYUEgcGFBIIBhQGFBMIEgcTBxIHBhQGFAe/AAAAAAAA'
+      down_bridge:
+        friendly_name: "Down Bridge"
+        command_on: 'shMyAAYUEgcGFAYUBhQSCAYUEggGFBIIBhQSCAYUEggGFBIHEgcSCAYUBhQGFAYUEggSBwa/AAAAAAAA'
+        command_off: 'slwyAAYUEwgGFAYUBhQTCAYUEwgGExMIBhQSCAYUEggGExIIEwgSCAcUBhQTCBMHBhQGFAa/AAAAAAAA'
+      bs_led_light:
+        friendly_name: "BS LED Light"
+        command_on: 'skMyAAYUEgcGFAYUBhQSCAYUEgcGFBIIBhQSCAYUEggSBxIIBhQGFAYUBhMGFAYUEgcSCAa/AAAAAAAA'
+        command_off: 'smMyAAYUEggGFAYUBhQSBwYUEgcGFBIHBxQSBwYUEgcSCBMIBhQGFAYUBxQSBxMIBhQHFAa/AAAAAAAA'
+      bs_led_light_brightness:
+        friendly_name: "BS LED Light Brightness"
+        command_on: "sgC0AA8tKxMqEyoUEC0QLRAxEC0QLRAuEC0QLRAtEC0qFyoTKhMqEysSKxMqEyoUEC4PshEtECwrEyoUEC0QLCsTEDArExAtKhMqEyoUEC0QLRAxEC0QLRAtES0QLRAtEC0qFisSKxIrEysSKhMrEyoTES4PshAtESwrEisTEC0QLSsSES8rExEsKhMrEyoTESwRLBEwESwRLBIsESwRLBEsEisrFisSKxIsESwSKxIrEisTEQAF3AAAAAA="
+        command_off: "sgGEAysTESwRLBEwESwRLBEtEC0QLREsKxIRMCsSKxIrEiwSKhMrEhEsKxQPsxAtESsrEysTEC0QLCsTES8rExEsKxIrEisTESwRLBIvESwRLRAtESwRLBEsKxMRLysSKxMrEisSKxIrExErLEcPshEsEissESwSES0QLCsTES8rExErLBIrEisTESwRLBIvESwRLBIsESwRLBEsKxMRLysSLBIqEysSKxIrExEsKxQPshEsEisrEyoTES0QLCwSES8rExEsKxIrEiwSESwRLRAwES0QLREsESwRLRAsKxMRLysTKhMrEisSKxIsEhEsKxQPsxAtESwrEisTEC0RLCoTETArEhEsKxIrEiwSESwSKxIvES0RLBEsES0QLRAsLBIRLysTKhMrEisSLBEsEhEsKxQQshEsESwrEisTEC0RLCsTEDArEhEsKxIrEysSES0QLREwEC0RLBEsES0QLRAsLBIRLywSKxIrEisTKxEsEhIrLEcPshEsESwrEiwSES0QLCsTES8rExErLBIrEisTEC0RLBEwESwRLBEtESwRLBEsKxISLysSKxIsEisSKxIrExEsKxQPshEsEisrEiwSESwSKywSES8rExEsKxIrEiwSESwRLBEwESwRLRAtESwRLBEsKxISLysSKxIsEisSKxIsEhEsKxQPshEtECwrEiwSESwRLCsTES8rExAtKxIrEisTESwRLBEwESwRLRAsEiwRLBEsKxMQMCsSKxIsESwSKxIrExErLBMQshEsESwrEiwSESwRLCsTES8rExAsKxMrEisTEC0RLBEwESwRLBEsESwSLBEsKxIRLywSKxIsESwSKxIrExErK0gPshEsESwrEiwSESwRLCwSES8rExErLBIrEisTESwRLBEwESwRLBEtEC0RLBEsKxMQMCsSKxIrEyoTKxIrExErLBQPshEsESwrEisTESwRLCsTEDArExEsKxIrEisTESwRLBEwESwRLBEtEC0QLREsKxIRMCsSKxIrEiwRLBIrExErLBQPshEsESwrEisTESwRLCsTES8rExEsKhMrEisTESwRLBEwESwRLBEtEC0RLBEsKxMQMCsSKxIrEiwSKxIrEhIrLBQPshEsESwrEisTESwRLCsTEC8sEhEsKxIsEisSES0QLREvEiwRLBEtEC0RLBErLBIRLywSKxIrEisSKxMrEhEsKwAF3AAAAAA="
+  - platform: command_line
+    switches:
+      playstation:
+        command_on: 'sudo ps4-waker'
+        command_off: 'sudo ps4-waker standby'
+        command_state: 'sudo ps4-waker search -d "192.168.1.21"  | grep -w "Ok" > null && ( echo "true")||( echo "false")'
+        value_template: '{{ value }}'
+        # scan_intterval: 5
+        friendly_name: "Playstation"
+
+notify:
+  - name: myslack
+    platform: slack
+    api_key: !secret slack_api
+    default_channel: '#home'
+
+intent_script:
+
+  PersonStatusIntent:
+    speech:
+      type: plain
+      text: >
+               {% for device in states.device_tracker  -%}
+               {% set PersonC = Person | capitalize %}
+               {% if device.attributes.friendly_name ==  PersonC -%}
+               {% set checkTime = as_timestamp(now()) - as_timestamp(device.last_changed) %}
+               {{device.attributes.friendly_name}} was 
+               {% if device.state =='not_home'-%} Away {% elif device.state =='home' %} At Home {% else %} at {{device.state}}{%-endif-%} since {% if checkTime / 3600 > 0.99999 -%} {{ "{0:,.0f}".format(  checkTime / 3600 | round) }} hours ,{%- endif%}
+               {% if checkTime / checkTime % 3600 / 60  > 0 %} {{ "{0:,.0f}".format(  checkTime % 3600 / 60  | round) }}  minutes {%- endif%}
+               {%-endif-%}
+               {%- endfor -%}
+          
+
+
+ # {% for device in states.device_tracker if device.attributes.friendly_name ==  Person  -%}
+ #               {% set checkTime = as_timestamp(now()) - as_timestamp(device.last_changed) %}
+ #               {{device.attributes.friendly_name}} was 
+ #               {% if device.state =='not_home'-%} Away {% elif device.state =='home' %} At Home {% else %} at {{device.state}}{%-endif-%}
+ #                since  {% if checkTime / 3600 > 0.99999 -%} {{ "{0:,.0f}".format(  checkTime / 3600 | round) }} hours ,{%- endif%}
+ #               {% if checkTime / checkTime % 3600 / 60  > 0 %} {{ "{0:,.0f}".format(  checkTime % 3600 / 60  | round) }}  minutes {%- endif%}
+ #               {%- endfor -%}
+  WhoIsHomeIntent:
+    speech:
+      type: plain
+      text: >
+          Well I can see 
+          {% for device in states.device_tracker if device.state == 'home' -%}
+          {{device. attributes.friendly_name}}{% if  not loop.last %}{{', '}}{%- endif%}{% if loop.last %}{{' '}}{%- endif%}
+          {%- endfor -%}
+          at Home right now!
+  UberIntent:
+    speech:
+      type: plain
+      text: >
+          Right now taking the rate is {{states("sensor.uberpool_price")}} $ and it will take  {{ states("sensor.uberpool_time") }} minutes
+
+  FindMyPhoneIntent:
+    action:
+      service: device_tracker.icloud_lost_iphone
+      # data_template:
+      #   entity_id: device_tracker.{{ Scene | replace(" ", "_") }}
+    speech:
+      type: plain
+      text: "Okay Ringing it now"
+
+  
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
