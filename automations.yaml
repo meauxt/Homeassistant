@@ -29,6 +29,40 @@
            ] | random }}
            {%- endmacro -%}
            "{{greeting_sentence(person)}}"
+
+- alias: Azaan Prayer Time
+  trigger:
+    - platform: state
+      entity_id:  sensor.prayer
+  action:
+      service: tts.google_say
+      entity_id: 
+        - media_player.living_room_speaker
+        - media_player.basement_speaker
+      data_template:
+        language: 'ar'
+        message: >
+            {% set next_pray = trigger.from_state.attributes['next pray'] %}
+              {% if next_pray == 'fajr' %}
+              {{'..حان الآن موعد صلاة الفَجر'}}
+
+              {% elif next_pray == 'dhuhr' %}
+              {{'..حان الآن موعد صلاة الظُّهر‎'}}
+
+              {% elif next_pray == 'asr' %}
+              {{'..حان الآن موعد صلاة العَصْرْ'}}
+
+              {% elif next_pray == 'maghrib' %}
+              {{'..حان الآن موعد صلاة المَغرِبْ'}}
+
+              {% elif next_pray == 'isha' %}
+              {{'..حان الآن موعد صلاة العِشَاءْ'}}
+
+            {% endif %}
+
+
+
+
 ###############################################
 #                                             #
 #           Motion Light Automation           #
@@ -144,3 +178,31 @@
             {% else %}
             {{trigger.from_state.attributes.friendly_name}} did left {{trigger.from_state.state}}
             {% endif %}
+
+###############################################
+#                                             #
+#         Scripts Automation Schedule         #
+#                                             #
+###############################################
+
+# - alias: Check USCIS Status
+#   trigger:
+#     - platform: state
+#       entity_id:  sensor.uscis_mohamad
+#   action:
+#   - service: shell_command.uscis_mohamad
+
+###############################################
+#                                             #
+#           USCIS New Status Change           #
+#                                             #
+###############################################
+
+- alias: Check USCIS Status
+  trigger:
+    - platform: state
+      entity_id:  sensor.uscis_mohamad
+  action:
+      service: notify.important_channel
+      data_template:
+        message: ":statue_of_liberty: Status on {{trigger.from_state.attributes.friendly_name}} has been Change to {{states(trigger.entity_id)}}" 
