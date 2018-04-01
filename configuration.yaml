@@ -15,13 +15,52 @@ homeassistant:
 
 # Show links to resources in log and frontend
 # introduction:
+# logger:
+  # logs:
+    # homeassistant.components.dominionenergy: notset
+    
+homekit:
+  # pincode: "123-45-678"
 
-# Enables the frontend
+    # Enables the frontend
 frontend:
-
+  themes:
+    darkcyan:
+    # Main colors that can be changed
+      primary-color: "#00bcd4"
+      disabled-text-color: "#545454"
+      divider-color: "rgba(255, 255, 255, 0.12)"
+      paper-card-background-color: "#4e4e4e"
+      paper-grey-200: "#191919"
+      paper-item-icon-color: "#d3d3d3"
+      paper-listbox-background-color: "#202020"
+      paper-listbox-color: "#FFFFFF"      
+      primary-background-color: "#303030"
+      primary-text-color: "#cfcfcf"      
+      secondary-background-color: "#2b2b2b"
+      secondary-text-color: "#04a7bc"
+    # Colors based on variables, see above
+      label-badge-background-color: "var(--secondary-background-color)"
+      label-badge-text-color: "var(--text-primary-color)"
+      paper-card-header-color: "#var(--paper-item-icon-color)"
+      paper-grey-50: "var(--primary-text-color)"
+      paper-item-icon-active-color: "var(--primary-color)"
+      paper-item-icon_-_color: "var(--primary-text-color)"
+      paper-slider-active-color: "var(--primary-color)"
+      paper-slider-knob-color: "var(--primary-color)"
+      paper-slider-knob-start-color: "var(--primary-color)"
+      paper-slider-pin-color: "var(--primary-color)"
+      paper-slider-secondary-color: "var(--light-primary-color)"     
+      paper-toggle-button-checked-ink-color: "var(--dark-primary-color)"
+      paper-toggle-button-checked-button-color: "var(--primary-color)"
+      paper-toggle-button-checked-bar-color: "var(--light-primary-color)"
+      paper-toggle-button-unchecked-bar-color: "var(--primary-text-color)"
 # Enables configuration UI
 config:
+
 alexa:
+dialogflow:
+
 google_assistant:
   project_id: !secret google_project_id
   client_id: !secret google_client_id
@@ -33,6 +72,11 @@ google_assistant:
 
 
 
+usps:
+    username: !secret usps_username
+    password: !secret usps_password
+    driver: phantomjs
+
 
 http:
   api_password: !secret http_password
@@ -42,19 +86,9 @@ http:
 
 media_player:
   - platform: cast
-# Checks for available updates
-# Note: This component will send some information about your system to
-# the developers to assist with development of Home Assistant.
-# For more information, please see:
-# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
 updater:
-  # Optional, allows Home Assistant developers to focus on popular components.
-  # include_used_components: true
 
-# Discover some devices automatically
-# discovery:
 
-# Allows you to issue voice commands from the frontend in enabled browsers
 conversation:
 
 # Enables support for tracking state changes over time
@@ -69,21 +103,27 @@ map:
 # Track the sun
 sun:
 
-# vacuum:
-#   - platform: xiaomi_miio
-#     host: 192.168.1.162
-#     token: '44617a57586b5739474769754375754b'
-#     name: vacuum
+vacuum:
+  - platform: xiaomi_miio
+    host: 192.168.1.122
+    token: !secret xiaomi_token
+    name: vacuum
 # Weather prediction
 sensor:
-  # - platform: speedtest
-  #   minute:
-  #     - 0
-  #     - 30
-  #   monitored_conditions:
-  #     - ping
-  #     - download
-  #     - upload
+  - platform: prayer
+    latitude: !secret home_latitude
+    longitude: !secret home_longitude
+  
+  - platform: uscis
+    username: !secret uscis_username
+    password: !secret uscis_password
+    friendly_name: "Green Card"
+
+  - platform: dominionenergy
+    username: !secret dominionenergy_username
+    password: !secret dominionenergy_password
+
+
       
   - platform: yr
   - platform: command_line
@@ -91,22 +131,22 @@ sensor:
   #  scan_intterval: 5
     command: "sudo ps4-waker search | grep -w 'running-app-name' | cut -c 24- | rev | cut -c 3- | rev "
 
-  - platform: uber
-    server_token: !secret uber_server_token
-    start_latitude: !secret uber_start_latitude
-    start_longitude: !secret uber_start_longitude
-    end_latitude: !secret uber_end_latitude
-    end_longitude: !secret uber_end_longitude
-    product_ids:
-     - 'bc300c14-c30d-4d3f-afcb-19b240c16a13'
+  # - platform: uber
+  #   server_token: !secret uber_server_token
+  #   start_latitude: !secret uber_start_latitude
+  #   start_longitude: !secret uber_start_longitude
+  #   end_latitude: !secret uber_end_latitude
+  #   end_longitude: !secret uber_end_longitude
+  #   product_ids:
+  #    - 'bc300c14-c30d-4d3f-afcb-19b240c16a13'
 
   - platform: mqtt
     state_topic: "smartthings/Motion/motion"
     name: LR Motion
 
   - platform: mqtt
-    state_topic: "smartthings/Bedroom Motion/Temp Sensor/motion"
-    name: Upstairs Motion
+    state_topic: "smartthings/Bedroom Motion Sensor/motion"
+    name: Kitchen Motion
 
   # - platform: mqtt
   #   state_topic: "sleeping"
@@ -122,7 +162,13 @@ sensor:
 
   - platform: mqtt
     state_topic: "smartthings/Bedroom Motion Sensor/temperature"
-    name: Upstairs Temperature
+    name: Main Level Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/SmartSense Multi/contact"
+    name: Front Door
+
+     
 
 # Cloud
 cloud:
@@ -182,13 +228,22 @@ light:
     payload_off: "off"
     retain: true
 
-  -  platform: mqtt
-     name: "BS Office Lamp"
-     state_topic: "smartthings/Bedroom Homo Lamp/switch"
-     command_topic: "smartthings/Bedroom Homo Lamp/switch"
-     payload_on: "on"
-     payload_off: "off"
-     retain: true
+  - platform: mqtt
+    name: "Kitchen Light"
+    state_topic: "stat/sonoffs/sonoff2/POWER"
+    command_topic: "cmnd/sonoffs/sonoff2/power"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: true
+
+  # -  platform: mqtt
+  #    name: "BS Office Lamp"
+  #    state_topic: "smartthings/Bedroom Homo Lamp/switch"
+  #    command_topic: "smartthings/Bedroom Homo Lamp/switch"
+  #    payload_on: "on"
+  #    payload_off: "off"
+  #    retain: true
 
   - platform: mqtt
     name: "BS Lamp"
@@ -231,21 +286,51 @@ switch:
         friendly_name: "BS LED Light Brightness"
         command_on: "sgC0AA8tKxMqEyoUEC0QLRAxEC0QLRAuEC0QLRAtEC0qFyoTKhMqEysSKxMqEyoUEC4PshEtECwrEyoUEC0QLCsTEDArExAtKhMqEyoUEC0QLRAxEC0QLRAtES0QLRAtEC0qFisSKxIrEysSKhMrEyoTES4PshAtESwrEisTEC0QLSsSES8rExEsKhMrEyoTESwRLBEwESwRLBIsESwRLBEsEisrFisSKxIsESwSKxIrEisTEQAF3AAAAAA="
         command_off: "sgGEAysTESwRLBEwESwRLBEtEC0QLREsKxIRMCsSKxIrEiwSKhMrEhEsKxQPsxAtESsrEysTEC0QLCsTES8rExEsKxIrEisTESwRLBIvESwRLRAtESwRLBEsKxMRLysSKxMrEisSKxIrExErLEcPshEsEissESwSES0QLCsTES8rExErLBIrEisTESwRLBIvESwRLBIsESwRLBEsKxMRLysSLBIqEysSKxIrExEsKxQPshEsEisrEyoTES0QLCwSES8rExEsKxIrEiwSESwRLRAwES0QLREsESwRLRAsKxMRLysTKhMrEisSKxIsEhEsKxQPsxAtESwrEisTEC0RLCoTETArEhEsKxIrEiwSESwSKxIvES0RLBEsES0QLRAsLBIRLysTKhMrEisSLBEsEhEsKxQQshEsESwrEisTEC0RLCsTEDArEhEsKxIrEysSES0QLREwEC0RLBEsES0QLRAsLBIRLywSKxIrEisTKxEsEhIrLEcPshEsESwrEiwSES0QLCsTES8rExErLBIrEisTEC0RLBEwESwRLBEtESwRLBEsKxISLysSKxIsEisSKxIrExEsKxQPshEsEisrEiwSESwSKywSES8rExEsKxIrEiwSESwRLBEwESwRLRAtESwRLBEsKxISLysSKxIsEisSKxIsEhEsKxQPshEtECwrEiwSESwRLCsTES8rExAtKxIrEisTESwRLBEwESwRLRAsEiwRLBEsKxMQMCsSKxIsESwSKxIrExErLBMQshEsESwrEiwSESwRLCsTES8rExAsKxMrEisTEC0RLBEwESwRLBEsESwSLBEsKxIRLywSKxIsESwSKxIrExErK0gPshEsESwrEiwSESwRLCwSES8rExErLBIrEisTESwRLBEwESwRLBEtEC0RLBEsKxMQMCsSKxIrEyoTKxIrExErLBQPshEsESwrEisTESwRLCsTEDArExEsKxIrEisTESwRLBEwESwRLBEtEC0QLREsKxIRMCsSKxIrEiwRLBIrExErLBQPshEsESwrEisTESwRLCsTES8rExEsKhMrEisTESwRLBEwESwRLBEtEC0RLBEsKxMQMCsSKxIrEiwSKxIrEhIrLBQPshEsESwrEisTESwRLCsTEC8sEhEsKxIsEisSES0QLREvEiwRLBEtEC0RLBErLBIRLywSKxIrEisSKxMrEhEsKwAF3AAAAAA="
-  - platform: command_line
+      bs_office_lamp:
+        friendly_name: "BS Office Lamp"
+        command_on: "sgoyAAUSBRMFEwUSBRIQBwUSBRMFEhAHEAcQBwUSEAcFExAHBRMFEgUSBRMFEgUSEAcQBwWtAAAA"
+        command_off: "shsyAAUSBRIFEgUSBRIQBwUSBRIFExAIEAcRBwUSEAcFEhAHBRIFEgYSBRIQBxAHBRIFEgWtAAAA"
+      bs_vanity:
+        friendly_name: "Vanity"
+        command_on: "sgD8AAYQBhEGEAYQBhARBgUQBxAGEBEFBhARBhEFEQUGEBEFBhAGEQYQBhAGEAYQEgURBQarBhAGEQURBhAGEBEFBhEFEQUREQUGEBEFEQYRBQYQEQUGEAYRBhAGEAYQBhARBhEFBqsGEAYQBhAGEQYQEQUGEAYQBhERBQYQEQURBREGBhARBQYQBhAGEAYRBhAGEBEFEQUGrAYQBhAGEAYQBhARBgYQBhAGEBEFBhARBhEFEQUGEBEGBREFEQYQBhAGEAYREAYRBQarBhAGEAYRBREGEBEFBhAGEAYQEgUGEBEFEQURBQYREAYGEAYQBhAGEAYQBxARBREFBgAF3AAAAAAAAAAAAAAAAA=="
+        command_off: "sQsyAAYSBhIGEgYRBhIRBgYRBhIGEhEGBhIRBxEGEQcGEhEGBhEGEgYSBhIRBxEHBhEGEgatAAAA"
+      tb_lamp:
+        friendly_name: "TB Lamp"
+        command_on: 'sggyAAYSBhEHEQcRBhERBgYRBhEHERIGBhIRBgYREgYHEREHEQcSBgcRBxEGEQYSEQYSBgesAAAA'
+        command_off: 'sggyAAYRBhEGEQYRBhERBgcRBhEGEREGBhERBgYREQYHEREGEQYRBgYRBhESBhEGBhEGEQasAAAA'
+      extra_plug:
+        friendly_name: "TB Lamp"
+        command_on: 'sgkyAAYRBxEGEQcRBhESBgcRBhEGERIGBhESBgcREQYRBhIGBhEHEQYRBxEGEQYREQYSBgasAAAA'
+        command_off: 'sggyAAYSBhEGEQYRBhERBwYRBhIGEREGBhERBgYSEQYRBxEGBhIGEgYRBhIRBhEGBhEGEQatAAAA'
+  # - platform: command_line
+  #   switches:
+  #     playstation:
+  #       command_on: 'sudo ps4-waker'
+  #       command_off: 'sudo ps4-waker standby'
+  #       command_state: 'sudo ps4-waker search -d "192.168.1.21"  | grep -w "Ok" > null && ( echo "true")||( echo "false")'
+  #       value_template: '{{ value }}'
+  #       # scan_intterval: 5
+  #       friendly_name: "Playstation"
+
+  - platform: template
     switches:
-      playstation:
-        command_on: 'sudo ps4-waker'
-        command_off: 'sudo ps4-waker standby'
-        command_state: 'sudo ps4-waker search -d "192.168.1.21"  | grep -w "Ok" > null && ( echo "true")||( echo "false")'
-        value_template: '{{ value }}'
-        # scan_intterval: 5
-        friendly_name: "Playstation"
+      vacuum:
+        value_template: "{{ is_state('vacuum.vacuum', 'on') }}"
+        turn_on:
+          service: vacuum.turn_on
+        turn_off:
+          service: vacuum.turn_off
+
 
 notify:
   - name: myslack
     platform: slack
     api_key: !secret slack_api
     default_channel: '#home'
+  - name: important_channel
+    platform: slack
+    api_key: !secret slack_api
+    default_channel: '#important'
 
 intent_script:
 
@@ -277,6 +362,16 @@ intent_script:
       type: plain
       text: >
           Well I can see 
+          {% for device in states.device_tracker if device.state == 'home' -%}
+          {{device. attributes.friendly_name}}{% if  not loop.last %}{{', '}}{%- endif%}{% if loop.last %}{{' '}}{%- endif%}
+          {%- endfor -%}
+          at Home right now!
+
+  WhereIsEverybody:
+    speech:
+      type: plain
+      text: >
+          
           {% for device in states.device_tracker if device.state == 'home' -%}
           {{device. attributes.friendly_name}}{% if  not loop.last %}{{', '}}{%- endif%}{% if loop.last %}{{' '}}{%- endif%}
           {%- endfor -%}
