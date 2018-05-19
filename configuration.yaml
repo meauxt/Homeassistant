@@ -2,8 +2,7 @@ homeassistant:
   # Name of the location where Home Assistant is running
   name: Home
   # Location required to calculate the time the sun rises and sets
-  latitude: !secret home_latitude
-  longitude: !secret home_longitude
+
   # Impacts weather/sunrise data (altitude above sea level in meters)
   elevation: 109
   # metric for Metric, imperial for Imperial
@@ -12,13 +11,21 @@ homeassistant:
   time_zone: America/New_York
   # Customization file
   customize: !include customize.yaml
+  customize_glob:
+    "sensor.*_uscis":
+      icon: mdi:account-card-details
+    "sensor.*_motion":
+      icon: mdi:run-fast
+    "sensor.*_temperature":
+      icon: mdi:temperature-fahrenheit
 
-# Show links to resources in log and frontend
-# introduction:
-# logger:
-  # logs:
-    # homeassistant.components.dominionenergy: notset
-    
+  customize_domain:
+    automation:
+      initial_state: 'on'
+
+zone: !include zone.yaml
+
+
 homekit:
   # pincode: "123-45-678"
 
@@ -72,10 +79,10 @@ google_assistant:
 
 
 
-usps:
-    username: !secret usps_username
-    password: !secret usps_password
-    driver: phantomjs
+# usps:
+#     username: !secret usps_username
+#     password: !secret usps_password
+#     driver: phantomjs
 
 
 http:
@@ -111,18 +118,39 @@ vacuum:
 # Weather prediction
 sensor:
   - platform: prayer
-    latitude: !secret home_latitude
-    longitude: !secret home_longitude
-  
+    latitude: !secret prayer_latitude
+    longitude: !secret prayer_longitude
+
+  - platform: systemmonitor
+    resources:
+      - type: disk_use_percent
+        arg: /home
+      - type: memory_use_percent
+      - type: processor_use
+
+
   - platform: uscis
-    username: !secret uscis_username
-    password: !secret uscis_password
-    friendly_name: "Green Card"
+    case_id: !secret uscis_case_id_mohamad
+    friendly_name: "Mohamad USCIS"
 
-  - platform: dominionenergy
-    username: !secret dominionenergy_username
-    password: !secret dominionenergy_password
+  - platform: uscis
+    case_id: !secret uscis_case_id_moutaz
+    friendly_name: "Moutaz USCIS"
 
+  - platform: uscis
+    case_id: !secret uscis_case_id_hala
+    friendly_name: "Hala USCIS"
+
+  - platform: uscis
+    case_id: !secret uscis_case_id_majed
+    friendly_name: "Majed USCIS"
+
+  # - platform: dominionenergy
+  #   username: !secret dominionenergy_username
+  #   password: !secret dominionenergy_password
+
+  - platform: socialblade
+    channel_id: UCADtlx2BLNKRRBRHZQvX33Q
 
       
   - platform: yr
@@ -131,15 +159,6 @@ sensor:
   #  scan_intterval: 5
     command: "sudo ps4-waker search | grep -w 'running-app-name' | cut -c 24- | rev | cut -c 3- | rev "
 
-  # - platform: uber
-  #   server_token: !secret uber_server_token
-  #   start_latitude: !secret uber_start_latitude
-  #   start_longitude: !secret uber_start_longitude
-  #   end_latitude: !secret uber_end_latitude
-  #   end_longitude: !secret uber_end_longitude
-  #   product_ids:
-  #    - 'bc300c14-c30d-4d3f-afcb-19b240c16a13'
-
   - platform: mqtt
     state_topic: "smartthings/Motion/motion"
     name: LR Motion
@@ -147,10 +166,16 @@ sensor:
   - platform: mqtt
     state_topic: "smartthings/Bedroom Motion Sensor/motion"
     name: Kitchen Motion
-
+    
   # - platform: mqtt
-  #   state_topic: "sleeping"
-  #   name: is Sleeping
+  #   state_topic: "ips/Mohamad"
+  #   name: Mohamad Location
+  # - platform: mqtt
+  #   state_topic: "ips/Jojo"
+  #   name: Jojo Location
+  # - platform: mqtt
+  #   state_topic: "ips/Hala"
+  #   name: Hala Location
 
   - platform: mqtt
     state_topic: "smartthings/Den Motion Sensor/motion"
@@ -164,9 +189,9 @@ sensor:
     state_topic: "smartthings/Bedroom Motion Sensor/temperature"
     name: Main Level Temperature
 
-  - platform: mqtt
-    state_topic: "smartthings/SmartSense Multi/contact"
-    name: Front Door
+  # - platform: mqtt
+  #   state_topic: "smartthings/SmartSense Multi/contact"
+  #   name: Front Door
 
      
 
@@ -175,6 +200,10 @@ cloud:
 
 device_tracker:
   - platform: locative
+
+  - platform: google_maps
+    username: !secret google_ha_username
+    password: !secret google_ha_password
 
   - platform: icloud
     username: !secret icloud_username
@@ -298,8 +327,8 @@ switch:
         friendly_name: "TB Lamp"
         command_on: 'sggyAAYSBhEHEQcRBhERBgYRBhEHERIGBhIRBgYREgYHEREHEQcSBgcRBxEGEQYSEQYSBgesAAAA'
         command_off: 'sggyAAYRBhEGEQYRBhERBgcRBhEGEREGBhERBgYREQYHEREGEQYRBgYRBhESBhEGBhEGEQasAAAA'
-      extra_plug:
-        friendly_name: "TB Lamp"
+      bs_floor_lamp:
+        friendly_name: "BS Floor Lamp"
         command_on: 'sgkyAAYRBxEGEQcRBhESBgcRBhEGERIGBhESBgcREQYRBhIGBhEHEQYRBxEGEQYREQYSBgasAAAA'
         command_off: 'sggyAAYSBhEGEQYRBhERBwYRBhIGEREGBhERBgYSEQYRBxEGBhIGEgYRBhIRBhEGBhEGEQatAAAA'
   # - platform: command_line
@@ -340,11 +369,12 @@ intent_script:
       text: >
                {% for device in states.device_tracker  -%}
                {% set PersonC = Person | capitalize %}
-               {% if device.attributes.friendly_name ==  PersonC -%}
+               {% if device.attributes.friendly_name ==  PersonC and 'google_maps_'  in device.entity_id  -%}
                {% set checkTime = as_timestamp(now()) - as_timestamp(device.last_changed) %}
                {{device.attributes.friendly_name}} was 
                {% if device.state =='not_home'-%} Away {% elif device.state =='home' %} At Home {% else %} at {{device.state}}{%-endif-%} since {% if checkTime / 3600 > 0.99999 -%} {{ "{0:,.0f}".format(  checkTime / 3600 | round) }} hours ,{%- endif%}
                {% if checkTime / checkTime % 3600 / 60  > 0 %} {{ "{0:,.0f}".format(  checkTime % 3600 / 60  | round) }}  minutes {%- endif%}
+               {% if device.state =='not_home' and distance(device) != None -%} they are  {{distance(device) | round(1) }} miles away from home.. {%- endif %}
                {%-endif-%}
                {%- endfor -%}
           
@@ -362,7 +392,7 @@ intent_script:
       type: plain
       text: >
           Well I can see 
-          {% for device in states.device_tracker if device.state == 'home' -%}
+          {% for device in states.device_tracker if device.state == 'home'  and 'google_maps_' not in device.entity_id  -%}
           {{device. attributes.friendly_name}}{% if  not loop.last %}{{', '}}{%- endif%}{% if loop.last %}{{' '}}{%- endif%}
           {%- endfor -%}
           at Home right now!
@@ -372,7 +402,7 @@ intent_script:
       type: plain
       text: >
           
-          {% for device in states.device_tracker if device.state == 'home' -%}
+          {% for device in states.device_tracker if device.state == 'home' and 'google_maps_' not in device.entity_id  -%}
           {{device. attributes.friendly_name}}{% if  not loop.last %}{{', '}}{%- endif%}{% if loop.last %}{{' '}}{%- endif%}
           {%- endfor -%}
           at Home right now!
