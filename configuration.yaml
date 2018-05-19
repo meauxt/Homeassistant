@@ -150,7 +150,8 @@ sensor:
   #   password: !secret dominionenergy_password
 
   - platform: socialblade
-    channel_id: UCADtlx2BLNKRRBRHZQvX33Q
+    channel_id: !secret socialBlade_channel_id
+    name: Youtube
 
       
   - platform: yr
@@ -167,16 +168,6 @@ sensor:
     state_topic: "smartthings/Bedroom Motion Sensor/motion"
     name: Kitchen Motion
     
-  # - platform: mqtt
-  #   state_topic: "ips/Mohamad"
-  #   name: Mohamad Location
-  # - platform: mqtt
-  #   state_topic: "ips/Jojo"
-  #   name: Jojo Location
-  # - platform: mqtt
-  #   state_topic: "ips/Hala"
-  #   name: Hala Location
-
   - platform: mqtt
     state_topic: "smartthings/Den Motion Sensor/motion"
     name: BS Motion
@@ -188,11 +179,6 @@ sensor:
   - platform: mqtt
     state_topic: "smartthings/Bedroom Motion Sensor/temperature"
     name: Main Level Temperature
-
-  # - platform: mqtt
-  #   state_topic: "smartthings/SmartSense Multi/contact"
-  #   name: Front Door
-
      
 
 # Cloud
@@ -216,9 +202,6 @@ device_tracker:
     password: !secret ddwrt_password
     track_new_devices: no
     
-  # - platform: nmap_tracker
-  #   hosts: 192.168.1.30-35
-  #   scan_options: " --privileged -sP "
   
 
 mqtt:
