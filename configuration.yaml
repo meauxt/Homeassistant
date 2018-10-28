@@ -2,6 +2,15 @@ homeassistant:
   # Name of the location where Home Assistant is running
   name: Home
   # Location required to calculate the time the sun rises and sets
+  latitude: !secret prayer_latitude
+  longitude: !secret prayer_longitude
+
+  auth_providers:
+   - type: homeassistant
+    # Uncomment next line if you want to enable legacy API password support
+   - type: legacy_api_password
+
+# Enable the auth component
 
   # Impacts weather/sunrise data (altitude above sea level in meters)
   elevation: 109
@@ -10,58 +19,126 @@ homeassistant:
   # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   time_zone: America/New_York
   # Customization file
+
   customize: !include customize.yaml
   customize_glob:
+    "sensor.*_temperature":
+      icon: mdi:temperature-fahrenheit
+    "sensor.*_battery":
+      icon: mdi:battery-50
     "sensor.*_uscis":
       icon: mdi:account-card-details
     "sensor.*_motion":
       icon: mdi:run-fast
-    "sensor.*_temperature":
-      icon: mdi:temperature-fahrenheit
+    "sensor.*_door":
+      icon: mdi:door
+    "script.*_key":
+      icon: mdi:car-key
+
 
   customize_domain:
     automation:
       initial_state: 'on'
+      haaska_hidden: true
+    scene:
+      haaska_hidden: true
 
 zone: !include zone.yaml
 
+emulated_hue:
+  expose_by_default: false
+  exposed_domains:
+    - light
+  entities:
+    light.bed_lamp_1:
+      name: "Bed Lamp 1"
+
+    light.bed_lamp_2:
+      name: "Bed Lamp 2"
 
 homekit:
   # pincode: "123-45-678"
 
     # Enables the frontend
 frontend:
+  extra_html_url:
+    - /local/custom_ui/state-card-floorplan.html
   themes:
-    darkcyan:
-    # Main colors that can be changed
-      primary-color: "#00bcd4"
-      disabled-text-color: "#545454"
-      divider-color: "rgba(255, 255, 255, 0.12)"
-      paper-card-background-color: "#4e4e4e"
-      paper-grey-200: "#191919"
-      paper-item-icon-color: "#d3d3d3"
-      paper-listbox-background-color: "#202020"
-      paper-listbox-color: "#FFFFFF"      
-      primary-background-color: "#303030"
-      primary-text-color: "#cfcfcf"      
-      secondary-background-color: "#2b2b2b"
-      secondary-text-color: "#04a7bc"
-    # Colors based on variables, see above
-      label-badge-background-color: "var(--secondary-background-color)"
-      label-badge-text-color: "var(--text-primary-color)"
-      paper-card-header-color: "#var(--paper-item-icon-color)"
-      paper-grey-50: "var(--primary-text-color)"
-      paper-item-icon-active-color: "var(--primary-color)"
-      paper-item-icon_-_color: "var(--primary-text-color)"
-      paper-slider-active-color: "var(--primary-color)"
-      paper-slider-knob-color: "var(--primary-color)"
-      paper-slider-knob-start-color: "var(--primary-color)"
-      paper-slider-pin-color: "var(--primary-color)"
-      paper-slider-secondary-color: "var(--light-primary-color)"     
-      paper-toggle-button-checked-ink-color: "var(--dark-primary-color)"
-      paper-toggle-button-checked-button-color: "var(--primary-color)"
-      paper-toggle-button-checked-bar-color: "var(--light-primary-color)"
-      paper-toggle-button-unchecked-bar-color: "var(--primary-text-color)"
+    midnight:
+      # Main colors
+      primary-color: '#5294E2'                                                        # Header
+      accent-color: '#E45E65'                                                         # Accent color
+      dark-primary-color: 'var(--accent-color)'                                       # Hyperlinks                                         
+      light-primary-color: 'var(--accent-color)'                                      # Horizontal line in about
+                                                                                   
+      # Text colors                                                                  
+      primary-text-color: '#FFFFFF'                                                   # Primary text colour, here is referencing dark-primary-color
+      text-primary-color: 'var(--primary-text-color)'                                 # Primary text colour
+      secondary-text-color: '#5294E2'                                                 # For secondary titles in more info boxes etc.
+      disabled-text-color: '#7F848E'                                                  # Disabled text colour
+      label-badge-border-color: 'green'                                               # Label badge border, just a reference value   
+
+      # Background colors                                                            
+      primary-background-color: '#383C45'                                             # Settings background
+      secondary-background-color: '#383C45'                                           # Main card UI background  
+      divider-color: 'rgba(0, 0, 0, .12)'                                             # Divider 
+        
+      # Table rows                                                                   
+      table-row-background-color: '#353840'                                           # Table row
+      table-row-alternative-background-color: '#3E424B'                               # Table row alternative
+                                                                                   
+      # Nav Menu                                                                   
+      paper-listbox-color: 'var(--primary-color)'                                     # Navigation menu selection hoover
+      paper-listbox-background-color: '#2E333A'                                       # Navigation menu background
+      paper-grey-50: 'var(--primary-text-color)'                                   
+      paper-grey-200: '#414A59'                                                       # Navigation menu selection
+                                                                                   
+      # Paper card                                                               
+      paper-card-header-color: 'var(--accent-color)'                                  # Card header text colour
+      paper-card-background-color: '#434954'                                          # Card background colour
+      paper-dialog-background-color: '#434954'                                        # Card dialog background colour
+      paper-item-icon-color: 'var(--primary-text-color)'                              # Icon color
+      paper-item-icon-active-color: '#F9C536'                                         # Icon color active
+      paper-item-icon_-_color: 'green'           
+      paper-item-selected_-_background-color: '#434954'                               # Popup item select                      
+      paper-tabs-selection-bar-color: 'green'
+
+      # Labels 
+      label-badge-red: 'var(--accent-color)'                                          # References the brand colour label badge border
+      label-badge-text-color: 'var(--primary-text-color)'                             # Now same as label badge border but that's a matter of taste
+      label-badge-background-color: '#2E333A'                                         # Same, but can also be set to transparent here
+
+      # Switches
+      paper-toggle-button-checked-button-color: 'var(--accent-color)'
+      paper-toggle-button-checked-bar-color: 'var(--accent-color)'
+      paper-toggle-button-checked-ink-color: 'var(--accent-color)'
+      paper-toggle-button-unchecked-button-color: 'var(--disabled-text-color)'
+      paper-toggle-button-unchecked-bar-color: 'var(--disabled-text-color)'
+      paper-toggle-button-unchecked-ink-color: 'var(--disabled-text-color)'  
+
+      # Sliders
+      paper-slider-knob-color: 'var(--accent-color)'
+      paper-slider-knob-start-color: 'var(--accent-color)'
+      paper-slider-pin-color: 'var(--accent-color)'
+      paper-slider-active-color: 'var(--accent-color)'
+      paper-slider-container-color: 'linear-gradient(var(--primary-background-color), var(--secondary-background-color)) no-repeat'
+      paper-slider-secondary-color: 'var(--secondary-background-color)'
+      paper-slider-disabled-active-color: 'var(--disabled-text-color)'
+      paper-slider-disabled-secondary-color: 'var(--disabled-text-color)'
+
+      # Google colors
+      google-red-500: '#E45E65'
+      google-green-500: '#39E949'
+    active_color:
+      paper-card-header-color: 'var(--accent-color)'                                  # Card header text colour
+      paper-card-background-color: '#434954'                                          # Card background colour
+      paper-dialog-background-color: '#434954'                                        # Card dialog background colour
+      paper-item-icon-color: '#F9C536'                                                # Icon color
+      paper-item-icon-active-color: '#F9C536'                                         # Icon color active
+      paper-item-icon_-_color: 'green'           
+      paper-item-selected_-_background-color: '#434954'                               # Popup item select                      
+      paper-tabs-selection-bar-color: 'green'
+
 # Enables configuration UI
 config:
 
@@ -70,19 +147,11 @@ dialogflow:
 
 google_assistant:
   project_id: !secret google_project_id
-  client_id: !secret google_client_id
-  access_token: !secret google_access_token
   exposed_domains:
     - switch
     - light
     - group
-
-
-
-# usps:
-#     username: !secret usps_username
-#     password: !secret usps_password
-#     driver: phantomjs
+    - sensor
 
 
 http:
@@ -93,6 +162,12 @@ http:
 
 media_player:
   - platform: cast
+
+  - platform: alexa
+    email: !secret amazon_user
+    password: !secret amazon_password
+    url: amazon.com
+
 updater:
 
 
@@ -117,6 +192,43 @@ vacuum:
     name: vacuum
 # Weather prediction
 sensor:
+  - platform: min_max
+    entity_ids:
+      - sensor.bs_temperature
+      - sensor.kitchen_temperature
+      - sensor.lr_temperature
+      - sensor.sb_temperature
+      - sensor.tb_temperature
+      - sensor.basement_stairs_temperature
+      - sensor.upstairs_temperature
+      - sensor.hallway_temperature
+    name: Avr Temperature
+  - platform: history_stats
+    name: PS Online Duration
+    entity_id: sensor.playstation_kids_online
+    state: True
+    type: time
+    start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+    end: '{{ now() }}'
+
+  - platform: template
+    sensors:
+      playstation_kids_online:
+        friendly_name: Playstation Plus
+        value_template: "{{ not is_state('sensor.playstation_kids', '' ) }}"
+      last_motion:
+        friendly_name: Last Motion
+        value_template: >
+          {%- set sensors = [states.sensor.bs_motion, states.sensor.kitchen_motion, states.sensor.lr_motion, states.sensor.sb_motion, states.sensor.tb_motion, states.sensor.basement_stairs_motion, states.sensor.upstairs_motion , states.sensor.hallway_motion ] %}
+          {%- set motion = '' %}
+
+          {% for sensor in sensors %}
+            {% if as_timestamp(sensor.last_changed) == as_timestamp(sensors | map(attribute='last_changed') | max) %}
+              {{ sensor.name }}
+            {% endif %}
+          {% endfor %}
+
+
   - platform: prayer
     latitude: !secret prayer_latitude
     longitude: !secret prayer_longitude
@@ -128,27 +240,6 @@ sensor:
       - type: memory_use_percent
       - type: processor_use
 
-
-  - platform: uscis
-    case_id: !secret uscis_case_id_mohamad
-    friendly_name: "Mohamad USCIS"
-
-  - platform: uscis
-    case_id: !secret uscis_case_id_moutaz
-    friendly_name: "Moutaz USCIS"
-
-  - platform: uscis
-    case_id: !secret uscis_case_id_hala
-    friendly_name: "Hala USCIS"
-
-  - platform: uscis
-    case_id: !secret uscis_case_id_majed
-    friendly_name: "Majed USCIS"
-
-  # - platform: dominionenergy
-  #   username: !secret dominionenergy_username
-  #   password: !secret dominionenergy_password
-
   - platform: socialblade
     channel_id: !secret socialBlade_channel_id
     name: Youtube
@@ -156,14 +247,103 @@ sensor:
       
   - platform: yr
   - platform: command_line
-    name: Current Game
-  #  scan_intterval: 5
-    command: "sudo ps4-waker search | grep -w 'running-app-name' | cut -c 24- | rev | cut -c 3- | rev "
+    name: Playstation Kids
+    scan_intterval: 60
+    command: "sudo ps4-waker search -d 192.168.1.121 | grep -w 'running-app-name' | cut -c 24- | rev | cut -c 3- | rev "
+
+  - platform: command_line
+    name: Playstation Slim
+    scan_intterval: 60
+    command: "sudo ps4-waker search -d 192.168.1.122 | grep -w 'running-app-name' | cut -c 24- | rev | cut -c 3- | rev "
+
 
   - platform: mqtt
     state_topic: "smartthings/Motion/motion"
+    name: Hallway Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/front door sensor/contact"
+    name: Front Door
+
+  - platform: mqtt
+    state_topic: "smartthings/Door sensor 2/contact"
+    name: Back Door
+
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 1/motion"
+    name: Upstairs Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 1/temperature"
+    name: Upstairs Temperature
+
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 2/motion"
     name: LR Motion
 
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 2/temperature"
+    name: LR Temperature
+
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 3/motion"
+    name: MB Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 3/temperature"
+    name: MB Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 4/motion"
+    name: Basement Stairs Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 4/temperature"
+    name: Basement Stairs Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 6/motion"
+    name: SB Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 6/temperature"
+    name: SB Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 7/motion"
+    name: Storage Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 7/temperature"
+    name: Storage Temperature
+
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 8/motion"
+    name: Dining Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 8/temperature"
+    name: Dining Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 9/motion"
+    name: Office Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 9/temperature"
+    name: Office Temperature
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor/motion"
+    name: TB Motion
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor/temperature"
+    name: TB Temperature  
   - platform: mqtt
     state_topic: "smartthings/Bedroom Motion Sensor/motion"
     name: Kitchen Motion
@@ -178,29 +358,73 @@ sensor:
 
   - platform: mqtt
     state_topic: "smartthings/Bedroom Motion Sensor/temperature"
-    name: Main Level Temperature
-     
+    name: Kitchen Temperature
+
+######################
+#     Batteries      #
+######################
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 6/battery"
+    name: SB Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 4/battery"
+    name: Basement Stairs Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 2/battery"
+    name: LR Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 3/battery"
+    name: MB Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor 1/battery"
+    name: Upstairs Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Motion Sensor/battery"
+    name: TB Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Roxie/battery"
+    name: Roxie Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Den Motion Sensor/battery"
+    name: BS Sensor Battery
+
+  - platform: mqtt
+    state_topic: "smartthings/Bedroom Motion Sensor/battery"
+    name: Kitchen Sensor Battery
 
 # Cloud
 cloud:
 
 device_tracker:
+  - platform: ddwrt
+    host: 192.168.1.1
+    username: !secret ddwrt_username
+    password: !secret ddwrt_password
+    track_new_devices: no
+
+  # - platform: owntracks_http
+  - platform: mqtt
+    devices:
+      roxie: 'smartthings/Roxie/presence'
   - platform: locative
 
-  - platform: google_maps
-    username: !secret google_ha_username
-    password: !secret google_ha_password
+  # - platform: google_maps
+  #   username: !secret google_ha_username
+  #   password: !secret google_ha_password
 
   - platform: icloud
     username: !secret icloud_username
     password: !secret icloud_password
     account_name: MohamadiCloud
 
-  - platform: ddwrt
-    host: 192.168.1.1
-    username: !secret ddwrt_username
-    password: !secret ddwrt_password
-    track_new_devices: no
+
     
   
 
@@ -241,6 +465,14 @@ light:
     retain: true
 
   - platform: mqtt
+    name: "MB Fan"
+    state_topic: "smartthings/MB Fan/switch"
+    command_topic: "smartthings/MB Fan/switch"
+    payload_on: "on"
+    payload_off: "off"
+    retain: true
+
+  - platform: mqtt
     name: "Kitchen Light"
     state_topic: "stat/sonoffs/sonoff2/POWER"
     command_topic: "cmnd/sonoffs/sonoff2/power"
@@ -248,14 +480,6 @@ light:
     payload_on: "ON"
     payload_off: "OFF"
     retain: true
-
-  # -  platform: mqtt
-  #    name: "BS Office Lamp"
-  #    state_topic: "smartthings/Bedroom Homo Lamp/switch"
-  #    command_topic: "smartthings/Bedroom Homo Lamp/switch"
-  #    payload_on: "on"
-  #    payload_off: "off"
-  #    retain: true
 
   - platform: mqtt
     name: "BS Lamp"
@@ -273,6 +497,13 @@ tts:
   time_memory: 300
 
 switch:
+
+  - platform: command_line
+    switches:
+      ps4_connection:
+        command_on: 'python /home/pi/.homeassistant/disconnect-connect-network/enable.py'
+        command_off: 'python /home/pi/.homeassistant/disconnect-connect-network/disable.py'
+
   - platform: broadlink
     host: 192.168.1.11
     mac: !secret broadlink_mac
@@ -302,8 +533,8 @@ switch:
         friendly_name: "BS Office Lamp"
         command_on: "sgoyAAUSBRMFEwUSBRIQBwUSBRMFEhAHEAcQBwUSEAcFExAHBRMFEgUSBRMFEgUSEAcQBwWtAAAA"
         command_off: "shsyAAUSBRIFEgUSBRIQBwUSBRIFExAIEAcRBwUSEAcFEhAHBRIFEgYSBRIQBxAHBRIFEgWtAAAA"
-      bs_vanity:
-        friendly_name: "Vanity"
+      sb_floor_lamp:
+        friendly_name: "SB Floor Lamp"
         command_on: "sgD8AAYQBhEGEAYQBhARBgUQBxAGEBEFBhARBhEFEQUGEBEFBhAGEQYQBhAGEAYQEgURBQarBhAGEQURBhAGEBEFBhEFEQUREQUGEBEFEQYRBQYQEQUGEAYRBhAGEAYQBhARBhEFBqsGEAYQBhAGEQYQEQUGEAYQBhERBQYQEQURBREGBhARBQYQBhAGEAYRBhAGEBEFEQUGrAYQBhAGEAYQBhARBgYQBhAGEBEFBhARBhEFEQUGEBEGBREFEQYQBhAGEAYREAYRBQarBhAGEAYRBREGEBEFBhAGEAYQEgUGEBEFEQURBQYREAYGEAYQBhAGEAYQBxARBREFBgAF3AAAAAAAAAAAAAAAAA=="
         command_off: "sQsyAAYSBhIGEgYRBhIRBgYRBhIGEhEGBhIRBxEGEQcGEhEGBhEGEgYSBhIRBxEHBhEGEgatAAAA"
       tb_lamp:
@@ -314,15 +545,10 @@ switch:
         friendly_name: "BS Floor Lamp"
         command_on: 'sgkyAAYRBxEGEQcRBhESBgcRBhEGERIGBhESBgcREQYRBhIGBhEHEQYRBxEGEQYREQYSBgasAAAA'
         command_off: 'sggyAAYSBhEGEQYRBhERBwYRBhIGEREGBhERBgYSEQYRBxEGBhIGEgYRBhIRBhEGBhEGEQatAAAA'
-  # - platform: command_line
-  #   switches:
-  #     playstation:
-  #       command_on: 'sudo ps4-waker'
-  #       command_off: 'sudo ps4-waker standby'
-  #       command_state: 'sudo ps4-waker search -d "192.168.1.21"  | grep -w "Ok" > null && ( echo "true")||( echo "false")'
-  #       value_template: '{{ value }}'
-  #       # scan_intterval: 5
-  #       friendly_name: "Playstation"
+      lr_floor_lamp:
+        friendly_name: "LR Floor Lamp"
+        command_on: 'shQyAAUTBRMFFAUTBRMRBwUTBRMFExEIBRMRCAYTEQgFExEIBRMFExEIEQgFEwUUEQcRCAW2AAAAAAAA'
+        command_off: 'sg4yAAUUBRMFEwUTBRMRBwUTBRMFExEIBRQRBwUTEQgFExEIBRMFExEHEQgRCBEIBRMFEwa2AAAAAAAA'
 
   - platform: template
     switches:
@@ -335,6 +561,9 @@ switch:
 
 
 notify:
+  - name: pushbullet_notifier
+    platform: pushbullet
+    api_key: o.dfpEZXLyfwrakRoM0cOjfX87lN7NK9Gt
   - name: myslack
     platform: slack
     api_key: !secret slack_api
@@ -352,7 +581,7 @@ intent_script:
       text: >
                {% for device in states.device_tracker  -%}
                {% set PersonC = Person | capitalize %}
-               {% if device.attributes.friendly_name ==  PersonC and 'google_maps_'  in device.entity_id  -%}
+               {% if device.attributes.friendly_name ==  PersonC -%}
                {% set checkTime = as_timestamp(now()) - as_timestamp(device.last_changed) %}
                {{device.attributes.friendly_name}} was 
                {% if device.state =='not_home'-%} Away {% elif device.state =='home' %} At Home {% else %} at {{device.state}}{%-endif-%} since {% if checkTime / 3600 > 0.99999 -%} {{ "{0:,.0f}".format(  checkTime / 3600 | round) }} hours ,{%- endif%}
@@ -361,15 +590,7 @@ intent_script:
                {%-endif-%}
                {%- endfor -%}
           
-
-
- # {% for device in states.device_tracker if device.attributes.friendly_name ==  Person  -%}
- #               {% set checkTime = as_timestamp(now()) - as_timestamp(device.last_changed) %}
- #               {{device.attributes.friendly_name}} was 
- #               {% if device.state =='not_home'-%} Away {% elif device.state =='home' %} At Home {% else %} at {{device.state}}{%-endif-%}
- #                since  {% if checkTime / 3600 > 0.99999 -%} {{ "{0:,.0f}".format(  checkTime / 3600 | round) }} hours ,{%- endif%}
- #               {% if checkTime / checkTime % 3600 / 60  > 0 %} {{ "{0:,.0f}".format(  checkTime % 3600 / 60  | round) }}  minutes {%- endif%}
- #               {%- endfor -%}
+   
   WhoIsHomeIntent:
     speech:
       type: plain
@@ -398,13 +619,50 @@ intent_script:
   FindMyPhoneIntent:
     action:
       service: device_tracker.icloud_lost_iphone
-      # data_template:
-      #   entity_id: device_tracker.{{ Scene | replace(" ", "_") }}
+
     speech:
       type: plain
       text: "Okay Ringing it now"
 
+weather:
+  - platform: yweather
   
+# camera:
+#   - name: 'Living Camera'
+#     platform: mjpeg
+#     username: !secret camera_username
+#     password: !secret camera_password
+#     verify_ssl: false
+#     mjpeg_url: !secret camera_living_url
+#     framerate: 5
+
+panel_custom:
+  - name: floorplan
+    sidebar_title: Floorplan
+    sidebar_icon: mdi:home
+    url_path: floorplan
+    config: !include floorplan.yaml
+binary_sensor:
+  - platform: mqtt
+    state_topic: dummy/floorplan/sensor
+    name: Floorplan
+  # - platform: mqtt
+  #   state_topic: dummy/floorplan/sensor
+  #   name: first_level
+  # - platform: mqtt
+  #   state_topic: dummy/floorplan/sensor
+  #   name: ground_level
+  # - platform: mqtt
+  #   state_topic: dummy/floorplan/sensor
+  #   name: second_level
+tuya:
+  username: !secret tuya_username
+  password: !secret tuya_password
+  country_code: 1
+
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
+scene: !include scenes.yaml
+auth:
+
