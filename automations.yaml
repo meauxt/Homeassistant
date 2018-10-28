@@ -3,27 +3,48 @@
 #       Google Home Automation Message        #
 #                                             #
 ###############################################
+
 - alias: Someone Arrived Home
+  initial_state: True
   trigger:
     - platform: state
-      entity_id:  device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce, device_tracker.861678d45b62cbe7, device_tracker.2f276f4efc3d4e6f9cf2d5f078b3171c, device_tracker.334e6e718945401592bacc9c5ec625a5, device_tracker.9245f2e89c6243f892cd3210f56b4b54
+      entity_id:  device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce,  device_tracker.2f276f4efc3d4e6f9cf2d5f078b3171c, device_tracker.334e6e718945401592bacc9c5ec625a5, device_tracker.9245f2e89c6243f892cd3210f56b4b54, device_tracker.861678d45b62cbe7
+      # entity_id:  device_tracker.mohamad_iphone, device_tracker.jiji_iphone ,device_tracker.hala_iphone,  device_tracker.nizar_iphone, device_tracker.majed_iphone, device_tracker.moutaz_iphone, device_tracker.nour_iphone
+
       to: 'home'
+  condition:
+    condition: template
+    value_template: "{{ as_timestamp(now()) - as_timestamp(trigger.from_state.last_updated) > 240 }}"
+
   action:
       service: tts.google_say
       entity_id: 
         - media_player.living_room_speaker
         - media_player.basement_speaker
       data_template:
+        # message: >
+        #    {% set person = trigger.from_state.attributes.friendly_name %}
+        #    {%- macro greeting_sentence(person) -%}
+        #    {{ [
+        #    "Knock Knock! " ~ person + " just Arrived! We have missed you. Or at least myself And Alexa did." ~ person,
+        #    "Guess who is home?" ~ person + " is!",
+        #    person + " is now in the house.",
+        #    "Our home is now complete! " ~ person + " is Home!",
+        #    "Hey there! " ~ person + " is Home!",
+        #    "Knock Knock. Guess who is home ? "   ~ person + " is!",
+        #    person ~ "! Is home!",
+        #    "I know a secret! "  ~ person +" is home!"
+        #    ] | random }}
+        #    {%- endmacro -%}
+        #    "{{greeting_sentence(person)}}"
         message: >
            {% set person = trigger.from_state.attributes.friendly_name %}
            {%- macro greeting_sentence(person) -%}
            {{ [
            "Knock Knock! " ~ person + " just Arrived! We have missed you. Or at least myself And Alexa did." ~ person,
-           "Guess who is home?" ~ person +" is!",
            person + " is now in the house.",
            "Our home is now complete! " ~ person + " is Home!",
            "Hey there! " ~ person + " is Home!",
-           "Knock Knock. Guess who is home? "   ~ person +" is!",
            person ~ "! Is home!",
            "I know a secret! "  ~ person +" is home!"
            ] | random }}
@@ -31,9 +52,14 @@
            "{{greeting_sentence(person)}}"
 
 - alias: Azaan Prayer Time
+  initial_state: True
   trigger:
     - platform: state
       entity_id:  sensor.prayer
+      # to: '0:0'
+  condition:
+    condition: template
+    value_template: "{{ states.sensor.prayer.attributes['next pray'] in [ 'dhuhr', 'asr', 'maghrib', 'isha' ] }}"
   action:
       service: tts.google_say
       entity_id: 
@@ -43,10 +69,8 @@
         language: 'ar'
         message: >
             {% set next_pray = trigger.from_state.attributes['next pray'] %}
-              {% if next_pray == 'fajr' %}
-              {{'..حان الآن موعد صلاة الفَجر'}}
 
-              {% elif next_pray == 'dhuhr' %}
+              {% if next_pray == 'dhuhr' %}
               {{'..حان الآن موعد صلاة الظُّهر‎'}}
 
               {% elif next_pray == 'asr' %}
@@ -59,16 +83,100 @@
               {{'..حان الآن موعد صلاة العِشَاءْ'}}
 
             {% endif %}
+        # message: '..حان الآن موعد صلاة العِشَاءْ'
+              # {% if next_pray == 'fajr' %}
+              # {{'..حان الآن موعد صلاة الفَجر'}}
 
 
+- alias: Play Azaan
+  trigger:
+    - platform: mqtt
+      topic: smartthings/fake/ac
+      payload: 'on'
 
+  hide_entity: true
+  action:
+      service: media_player.play_media
+      # entity_id: 
+      #   - media_player.living_room_speaker
+      #   - media_player.basement_speaker
+      data: 
+        entity_id: media_player.living_room_speaker
+        media_content_id: 'https://meauxpi.duckdns.org:8111/local/audio/azan.mp3'
+        media_content_type: 'MUSIC'
+
+- alias: Time for coffee
+  trigger:
+    - platform: mqtt
+      topic: smartthings/fake/ac
+      payload: 'on'
+
+  action:
+      service: media_player.alexa_tts
+      # entity_id: 
+      #   - media_player.living_room_speaker
+      #   - media_player.basement_speaker
+      data: 
+        entity_id: media_player.everywhere
+        message: "Excuse me!.. it's time for coffee!"
+
+- alias: Everyone to Livingroom
+  trigger:
+    - platform: mqtt
+      topic: smartthings/fake/ac
+      payload: 'on'
+
+  hide_entity: true
+  action:
+      service: media_player.alexa_tts
+      # entity_id: 
+      #   - media_player.living_room_speaker
+      #   - media_player.basement_speaker
+      data: 
+        entity_id: media_player.basement
+        message: "oh!..Everyone sitting together and you still here?..how about you go to the Living room!!"
 
 ###############################################
 #                                             #
 #           Motion Light Automation           #
 #                                             #
 ###############################################
-- alias: Basement Stair Motion On
+- alias: Playing Ed Sheeran on Basement Speaker 
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: media_player.basement
+      to: 'playing'
+  condition:
+    - condition: template
+      value_template: "{{trigger.to_state.attributes.media_artist =='Ed Sheeran'}}"
+  
+  action:
+    - service: scene.turn_on
+      entity_id:
+        - scene.basement_pink_blue_light
+    - service: scene.turn_on
+      entity_id:
+        - scene.basement_pink_blue_light
+- alias: Stop Ed Sheeran on Basement Speaker 
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: media_player.basement
+      to: 'paused'
+  condition:
+    - condition: template
+      value_template: "{{trigger.to_state.attributes.media_artist =='Ed Sheeran'}}"
+  
+  action:
+    - service: scene.turn_on
+      entity_id:
+        - scene.reset_basement_colored_light
+    - service: scene.turn_on
+      entity_id:
+        - scene.reset_basement_colored_light
+
+- alias: Basement Bedroom Motion On
   hide_entity: true
   trigger:
     - platform: state
@@ -83,16 +191,12 @@
       entity_id:
         - switch.bs_led_light
 
-- alias: Basement Stair Motion Off
+- alias: Basement Bedroom Motion Off
   hide_entity: true
   trigger:
     - platform: state
       entity_id: sensor.bs_motion
-
-      # Optional
       to: 'inactive'
-      # At least one of the following required
-
   condition:
     - condition: state
       entity_id: sun.sun
@@ -102,11 +206,60 @@
       entity_id:
         - switch.bs_led_light
 
-- alias: Living Room Motion Inactive at Night
+
+
+
+- alias: Basement Stairs Motion On
+  hide_entity: true
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.basement_stairs_motion
+      to: 'active'
+  condition:
+    # - condition: state
+    #   entity_id: sun.sun
+    #   state: 'below_horizon'
+    # - condition: state
+    #   entity_id: sensor.bs_motion
+    #   state: 'inactive'
+    - condition: state
+      entity_id: switch.bs_office_lamp
+      state: 'off'
+  action:
+      service: switch.turn_on
+      entity_id:
+        - switch.bs_office_lamp
+
+- alias: Basement Stairs Motion Off
   hide_entity: true
   trigger:
     - platform: state
-      entity_id: sensor.motion
+      entity_id: sensor.basement_stairs_motion
+      to: 'inactive'
+      for:
+        seconds: 5
+  condition:
+    # - condition: state
+    #   entity_id: sun.sun
+    #   state: 'below_horizon'
+    - condition: state
+      entity_id: sensor.office_motion
+      state: 'inactive'
+    - condition: template
+      value_template: "{{as_timestamp(states.sensor.basement_stairs_motion.last_updated) -as_timestamp(states.sensor.office_motion.last_updated) >0}}"
+  
+  action:
+      service: homeassistant.turn_off
+      entity_id:
+        - group.basement
+
+- alias: Living Room Motion Inactive at Night
+  hide_entity: true
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.lr_motion
       to: 'inactive'
   condition:
     condition: and
@@ -128,9 +281,10 @@
 
 - alias: Living Room Motion Active at Night
   hide_entity: true
+  initial_state: true
   trigger:
     - platform: state
-      entity_id: sensor.motion
+      entity_id: sensor.lr_motion
       to: 'active'
   condition:
     condition: and
@@ -148,6 +302,82 @@
       - scene.living_room_low_motion
   
 
+
+- alias: Kitchen Motion Off
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.kitchen_motion
+
+      # Optional
+      to: 'inactive'
+      for:
+        minutes: 15
+      # At least one of the following required
+
+  action:
+      service: light.turn_off
+      entity_id:
+        - light.kitchen_light
+
+- alias: Storage Motion Off
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.storage_motion
+      to: 'inactive'
+      for:
+        minutes: 3
+
+  action:
+      service: switch.turn_off
+      entity_id:
+        - switch.42468540dc4f22cd6100
+
+- alias: Storage Motion On
+  hide_entity: true
+  trigger:
+    - platform: state
+      entity_id: sensor.storage_motion
+      to: 'active'
+
+  action:
+      service: switch.turn_on
+      entity_id:
+        - switch.42468540dc4f22cd6100
+# - alias: No one in Living Room
+#   trigger:
+#     - platform: state
+#       entity_id: sensor.occupition_living
+#       to: 'not_occupied'
+
+#   hide_entity: true
+#   action:
+#       service: homeassistant.turn_off
+#       entity_id: 
+#         - group.living_room
+
+# - alias: Living Room Motion
+#   hide_entity: true
+#   trigger:
+#     - platform: state
+#       entity_id: sensor.lr_motion
+#       to: 'active'
+#   condition:
+#     condition: and
+#     conditions:
+#       - condition: state
+#         entity_id: sun.sun
+#         state: 'below_horizon'
+#       - condition: template
+#         value_template: "{{ states('sensor.occupition_living') == 'lights_off'}}"
+
+  # action:
+  # - service: homeassistant.turn_on
+  #   entity_id:
+  #     - light.lr_lamp
+
+
 ###############################################
 #                                             #
 #      Slack: Slack Automated Message/Bot     #
@@ -155,16 +385,19 @@
 ###############################################
 
 - alias: Someone Location Change
+  initial_state: True
   trigger:
     - platform: state
-      entity_id:  device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce, device_tracker.861678d45b62cbe7, device_tracker.2f276f4efc3d4e6f9cf2d5f078b3171c, device_tracker.334e6e718945401592bacc9c5ec625a5, device_tracker.9245f2e89c6243f892cd3210f56b4b54
+      # entity_id:   device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce,  device_tracker.9245f2e89c6243f892cd3210f56b4b54, device_tracker.861678d45b62cbe7
+      entity_id:  device_tracker.mohamad_iphone, device_tracker.jiji_iphone ,device_tracker.hala_iphone,  device_tracker.nizar_iphone, device_tracker.majed_iphone, device_tracker.moutaz_iphone, device_tracker.nour_iphone
+
   action:
       service: notify.myslack
       data_template:
         message: >
             {% set entity_name = trigger.entity_id %}
             {% set current_state = states(entity_name) %}
-            {% if states(entity_name) != 'not_home' %}
+            {% if states(entity_name) != 'not_home'  and trigger.from_state.state != trigger.to_state.state %}
             {{trigger.from_state.attributes.friendly_name}} just arrived at {{ states(entity_name) }}
               {% if current_state == 'home' %}
               {{' :house:'}}
@@ -178,6 +411,148 @@
             {% else %}
             {{trigger.from_state.attributes.friendly_name}} did left {{trigger.from_state.state}}
             {% endif %}
+
+- alias: Someone Location Change Notification
+  initial_state: True
+  trigger:
+    - platform: state
+      entity_id:  device_tracker.mohamad_iphone, device_tracker.jiji_iphone ,device_tracker.hala_iphone,  device_tracker.nizar_iphone, device_tracker.majed_iphone, device_tracker.moutaz_iphone, device_tracker.nour_iphone
+  # condition:
+  #   condition: template
+  #   value_template: "{{ ( trigger.from_state.state != trigger.to_state.state and ( trigger.to_state.state=="Giant"  or trigger.to_state.state=="H-Mart" or trigger.to_state.state=="7-Eleven" or trigger.to_state.state=="Walmart" or trigger.to_state.state=="Starbucks" )) }}"
+
+  action:
+      service: tts.google_say
+      entity_id: 
+        - media_player.living_room_speaker
+        - media_player.basement_speaker
+        # - media_player.basement
+
+      data_template:
+        message: >
+            {% set entity_name = trigger.entity_id %}
+            {% set current_state = states(entity_name) %}
+            {% if states(entity_name) != 'not_home' and states(entity_name) != 'home' and states(entity_name) != 'away' and trigger.from_state.state != trigger.to_state.state %}
+            {{trigger.from_state.attributes.friendly_name}} is near {{ states(entity_name) }}.
+            {% endif %}
+
+###############################################
+#                                             #
+#            Security Automation              #
+#                                             #
+###############################################
+
+
+- alias: Door opened
+  initial_state: True
+  hide_entity: False
+  trigger:
+    - platform: state
+      # entity_id:  device_tracker.7af57c88cdf9724e, device_tracker.3d3b9e82cde5b9c7 ,device_tracker.539571cb65c54121b0d0b38a1941c4ce,  device_tracker.2f276f4efc3d4e6f9cf2d5f078b3171c, device_tracker.334e6e718945401592bacc9c5ec625a5, device_tracker.9245f2e89c6243f892cd3210f56b4b54, device_tracker.861678d45b62cbe7
+      entity_id: sensor.front_door
+      to: open
+  # condition:
+  #   - condition: template
+  #     value_template: "{{ not is_state('media_player.living_room_speaker', 'playing') }}"
+
+      
+  action:
+    # - service: media_player.volume_set
+    #   entity_id: 
+    #     - media_player.living_room_speaker
+    #   data:
+    #     volume_level: 1.0
+    # - service: media_player.play_media
+    #   entity_id: 
+    #     - media_player.living_room_speaker
+    #   data:
+    #     media_content_id: http://soundbible.com/grab.php?id=1599&type=mp3
+    #     media_content_type: music
+    - service: media_player.alexa_tts
+      entity_id: 
+        - media_player.living_room_3
+      data:
+        entity_id: media_player.living_room_3
+        message: Front Door Opened!
+    # - service: notify.pushbullet_notifier
+    #   data:
+    #     title: SOMEONE BREAKING INTO OUR HOME!
+    #     message: door opened
+
+- alias: Door no one's home
+  initial_state: True
+  hide_entity: False
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.front_door
+        - sensor.back_door
+      to: open
+  condition:
+    - condition: template
+      value_template: '{{ states.group.all_mobile_devices.state != "home"}}'
+  action:
+    - service: media_player.volume_set
+      entity_id: 
+        - media_player.living_room_speaker
+      data:
+        volume_level: 1.0
+    - service: media_player.play_media
+      entity_id: 
+        - media_player.living_room_speaker
+      data:
+        media_content_id: http://soundbible.com/grab.php?id=1937&type=mp3
+        media_content_type: music
+    - service: media_player.play_media
+
+    - service: notify.pushbullet_notifier
+      data:
+        title: SOMEONE BREAKING INTO OUR HOME!
+        message: SOMEONE BREAKING INTO OUR HOME
+
+- alias: Door left Opened
+  initial_state: True
+  hide_entity: False
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.front_door
+        # - sensor.back_door
+      to: 'open'
+      for:
+        seconds: 30
+
+  action:
+    # - service: media_player.volume_set
+    #   entity_id: 
+    #     - media_player.living_room_speaker
+    #   data:
+    #     volume_level: 1.0
+    # - service: media_player.play_media
+    #   entity_id: 
+    #     - media_player.living_room_speaker
+    #   data:
+    #     media_content_id: http://soundbible.com/grab.php?id=1937&type=mp3
+    #     media_content_type: music
+    # - service: media_player.play_media
+    - service: tts.google_say
+      entity_id: 
+        - media_player.living_room_speaker
+        - media_player.basement_speaker
+      data_template:
+        message: >
+            {{trigger.from_state.attributes.friendly_name}} Left Opened.. Please close it
+
+
+    - service: notify.important_channel
+      data_template:
+        message: " {{trigger.from_state.attributes.friendly_name}} Left Opened.. please make sure to close it" 
+        title: " {{trigger.from_state.attributes.friendly_name}} Left Opened" 
+    - service: notify.pushbullet_notifier
+      data_template:
+        message: " {{trigger.from_state.attributes.friendly_name}} Left Opened.. please make sure to close it" 
+        title: " {{trigger.from_state.attributes.friendly_name}} Left Opened" 
+
 
 ###############################################
 #                                             #
@@ -201,8 +576,33 @@
 - alias: Check USCIS Status
   trigger:
     - platform: state
-      entity_id:  sensor.uscis_mohamad
+      entity_id:  sensor.uscis_mohamad, sensor.moutaz_uscis, sensor.hala_uscis, sensor.majed_uscis
   action:
       service: notify.important_channel
       data_template:
         message: ":statue_of_liberty: Status on {{trigger.from_state.attributes.friendly_name}} has been Change to {{states(trigger.entity_id)}}" 
+
+
+###############################################
+#                                             #
+#           Theme Change Automation           #
+#                                             #
+###############################################
+
+
+- alias: Random Theme At Startup
+  initial_state: true
+  hide_entity: true
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+     - service_template: frontend.set_theme
+       data_template:
+         name: >
+           {% if states.sun.sun.state == "above_horizon" %}
+           {{ ["midnight"] | random  }}
+           {% else %}
+           {{ ["midnight"]| random  }}
+           {% endif %}
+
