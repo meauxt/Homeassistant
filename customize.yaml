@@ -1,0 +1,59 @@
+light.celling_light:
+  icon: mdi:ceiling-light
+light.mb_fan:
+  icon: mdi:fan
+  
+switch.kitchen_light:
+  icon: mdi:ceiling-light
+switch.bs_led_light:
+  icon: mdi:hotel
+
+
+switch.mb_lamp:
+  icon: mdi:lightbulb-outline
+switch.tv:
+  icon: mdi:television-classic
+switch.down_bridge:
+  icon: mdi:lightbulb
+  assumed_state: false
+
+switch.bs_office_lamp:
+  icon: mdi:lightbulb
+  # assumed_state: false
+
+switch.tb_lamp:
+  icon: mdi:lightbulb
+  assumed_state: false
+
+switch.bs_vanity:
+  assumed_state: false
+  icon: mdi:glassdoor
+
+switch.bs_floor_lamp:
+  assumed_state: false
+  icon: mdi:floor-lamp
+sensor.playstation_slim:
+  icon: mdi:playstation
+sensor.playstation_kids:
+  icon: mdi:playstation
+sensor.playstation_kids_online:
+  icon: mdi:gamepad-variant
+sensor.prayer:
+  icon: mdi:human-handsup
+sensor.social_blade:
+  icon: mdi:youtube
+  
+sensor.green_card:
+  icon: mdi:account-card-details
+binary_sensor.floorplan:
+  custom_ui_state_card: state-card-floorplan
+  config: !include floorplan.yaml
+# binary_sensor.ground_level:
+#   custom_ui_state_card: state-card-floorplan
+#   config: !include ground_level.yaml
+# binary_sensor.first_level:
+#   custom_ui_state_card: state-card-floorplan
+#   config: !include first_level.yaml
+# binary_sensor.second_level:
+#   custom_ui_state_card: state-card-floorplan
+#   config: !include second_level.yaml
