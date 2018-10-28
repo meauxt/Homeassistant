@@ -1,0 +1,26 @@
+  kia_key:
+    alias: 'Kia Key'
+
+    sequence:
+      # This is Home Assistant Script Syntax
+      - service: switch.broadlink_send_packet_192_168_1_11
+        data:
+          packet: "snAWAGckI2gjaCNoIwwjDCIMIwwiDSMLCgcAAA"
+
+  nissan_key:
+    alias: 'Nissan Key'
+
+    sequence:
+      # This is Home Assistant Script Syntax
+      - service: switch.broadlink_send_packet_192_168_1_11
+        data:
+          packet: "sl0WACNnZyMjZyNoCiQKJCMMCiQjDCMLCgYAAA=="
+
+  magic_key:
+    alias: 'Magic Key'
+
+    sequence:
+      # This is Home Assistant Script Syntax
+      - service: switch.broadlink_send_packet_192_168_1_11
+        data:
+          packet: "skEWACNoZyRnJGclCiUKJSIMIwwjDQolCggAAA=="
